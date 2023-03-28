@@ -29,7 +29,7 @@ namespace CompartidoPE.Abstracta
                 {
                     foreach (DictionaryEntry item in ex.Data)
                     {
-                        error.NroError = item.Key.ToString(); ;
+                        error.NroError = item.Key.ToString(); 
                         error.MsgError = item.Value.ToString();
                         _response.Error = error;
                     }
