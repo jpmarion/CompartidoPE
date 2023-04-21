@@ -9,13 +9,13 @@ namespace AuthPeDDD.Compartido.Abstracta
         private readonly Enum _enumValor;
         public AErrores(Enum enumValor)
         {
-            this._enumValor = enumValor;
+            _enumValor = enumValor;
         }
         public string GetNroError()
         {
             StringBuilder NroError = new StringBuilder();
-            NroError.Append(_enumValor.GetType().ToString());
             NroError.Append(_enumValor.ToString());
+
             return NroError.ToString();
         }
         public string GetDescription()
