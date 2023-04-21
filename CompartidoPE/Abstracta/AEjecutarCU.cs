@@ -39,6 +39,7 @@ namespace CompartidoPE.Abstracta
                 {
                     error.NroError = ex.StackTrace;
                     error.MsgError = ex.Message;
+                    _response.Error = error;
                     return _response;
                 }
             }
