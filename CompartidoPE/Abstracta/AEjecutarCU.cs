@@ -22,12 +22,15 @@ namespace CompartidoPE.Abstracta
             error.NroError = string.Empty;
             try
             {
+                BeginTransaction();
                 _response.Data = Proceso();
                 _response.Error = error;
+                CommitTransaction();
                 return _response;
             }
             catch (Exception ex)
             {
+                RollbackTransaction();
                 if (ex.Data.Count != 0)
                 {
                     foreach (DictionaryEntry item in ex.Data)
