@@ -10,9 +10,12 @@ namespace CompartidoPE.Abstracta
 
         public AEjecutarCU(IResponse<T> response)
         {
-            this._response = response;
+            _response = response;
         }
         public abstract IList<T> Proceso();
+        public abstract void BeginTransaction();
+        public abstract void CommitTransaction();
+        public abstract void RollbackTransaction();
         public IResponse<T> Ejectuar()
         {
             IError error = new Error();
@@ -25,11 +28,11 @@ namespace CompartidoPE.Abstracta
             }
             catch (Exception ex)
             {
-                if (ex.Data.Count !=0)
+                if (ex.Data.Count != 0)
                 {
                     foreach (DictionaryEntry item in ex.Data)
                     {
-                        error.NroError = item.Key.ToString(); 
+                        error.NroError = item.Key.ToString();
                         error.MsgError = item.Value.ToString();
                         _response.Error = error;
                     }
