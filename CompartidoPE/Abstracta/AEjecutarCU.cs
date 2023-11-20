@@ -16,7 +16,6 @@ namespace CompartidoPE.Abstracta
         public abstract void BeginTransaction();
         public abstract void CommitTransaction();
         public abstract void RollbackTransaction();
-        public abstract void Close();
         public IResponse<T> Ejecutar()
         {
             IError error = new Error();
@@ -27,13 +26,11 @@ namespace CompartidoPE.Abstracta
                 _response.Data = Proceso();
                 _response.Error = error;
                 CommitTransaction();
-                Close();
                 return _response;
             }
             catch (Exception ex)
             {
                 RollbackTransaction();
-                Close();
                 if (ex.Data.Count != 0)
                 {
                     foreach (DictionaryEntry item in ex.Data)
