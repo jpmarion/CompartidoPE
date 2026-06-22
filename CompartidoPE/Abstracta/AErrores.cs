@@ -6,34 +6,19 @@ namespace AuthPeDDD.Compartido.Abstracta
 {
     public abstract class AErrores
     {
-        private readonly Enum _enumValor;
-        private FieldInfo _fieldInfo;
-        public AErrores(Enum enumValor)
+        protected AErrores(string nroError, string msgError)
         {
-            _enumValor = enumValor;
-            _fieldInfo = _enumValor.GetType().GetField(_enumValor.ToString());
+            _nroError = nroError;
+            MsgError = msgError;
         }
-        public string GetNroError()
-        {
-            StringBuilder NroError = new StringBuilder();
-            NroError.Append(_fieldInfo.FieldType.Name.Replace("Enum", ""));
-            NroError.Append(_enumValor.ToString("d"));
 
-            return NroError.ToString();
-        }
-        public string GetDescription()
-        {
-            var description = _enumValor.ToString();
+        private string? _nroError;
 
-            if (_fieldInfo != null)
-            {
-                var attrs = _fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), true);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    description = ((DescriptionAttribute)attrs[0]).Description;
-                }
-            }
-            return description;
+        public string NroError
+        {
+            get { return $"{GetType().Name}{_nroError}"; }
+            set => _nroError = value;
         }
+        public string? MsgError { get; set; }
     }
 }

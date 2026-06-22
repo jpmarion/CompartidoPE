@@ -1,53 +1,67 @@
 ﻿using CompartidoPE.Interface;
-using CompartidoPE.Modelo;
 using System.Collections;
 
 namespace CompartidoPE.Abstracta
 {
-    public abstract class AEjecutarCU<T>
+    public abstract class AEjecutarCU<T>(IRequest? request,
+                                         IParameters<T> parameters,
+                                         ISqlRepo sqlRepo)
     {
-        private readonly IResponse<T> _response;
+        protected abstract Task<IResponse<T>> Proceso();
+        protected abstract Task<IError?> Validaciones();
+        protected abstract Task Adaptador();
 
-        public AEjecutarCU(IResponse<T> response)
+        protected Task ConexionOpen() => sqlRepo.ConexionOpen();
+        protected void BeginTransaction() => sqlRepo.BeginTransaction();
+        protected void CommitTransaction() => sqlRepo.CommitTransaction();
+        protected void RollBackTransaction() => sqlRepo.RollbackTransaction();
+
+        public async Task<IResponse<T>> Ejecutar()
         {
-            _response = response;
-        }
-        public abstract IList<T> Proceso();
-        public abstract void BeginTransaction();
-        public abstract void CommitTransaction();
-        public abstract void RollbackTransaction();
-        public IResponse<T> Ejecutar()
-        {
-            IError error = new Error();
-            error.NroError = string.Empty;
             try
             {
+                await ConexionOpen();
+
+                await Adaptador();
+
+                parameters.Error = await Validaciones();
+                if (parameters.Error != null)
+                {
+                    parameters.Response.Error = parameters.Error;
+                    return parameters.Response;
+                }
+
                 BeginTransaction();
-                _response.Data = Proceso();
-                _response.Error = error;
-                CommitTransaction();
-                return _response;
+                parameters.Response = await Proceso();
+
+                if (parameters.Response.Error == null) CommitTransaction();
+                else RollBackTransaction();
+
+                return parameters.Response;
             }
             catch (Exception ex)
             {
-                RollbackTransaction();
+                RollBackTransaction();
+                parameters.Error ??= parameters.Error;
+
                 if (ex.Data.Count != 0)
                 {
                     foreach (DictionaryEntry item in ex.Data)
                     {
-                        error.NroError = item.Key.ToString();
-                        error.MsgError = item.Value.ToString();
-                        _response.Error = error;
+                        parameters.Error!.NroError = item.Key?.ToString()!;
+                        parameters.Error.MsgError = item.Value?.ToString()!;
+                        parameters.Response.Error = parameters.Error;
+                        break;
                     }
-                    return _response;
                 }
                 else
                 {
-                    error.NroError = ex.StackTrace;
-                    error.MsgError = ex.Message;
-                    _response.Error = error;
-                    return _response;
+                    parameters.Error!.NroError = ex.StackTrace!;
+                    parameters.Error.MsgError = ex.Message;
+                    parameters.Response.Error = parameters.Error;
                 }
+
+                return parameters.Response;
             }
         }
     }
