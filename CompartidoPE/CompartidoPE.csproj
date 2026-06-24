@@ -17,7 +17,8 @@
     <Company>BigToto</Company>
     <Description>Biblioteca arquitectura clara</Description>
     <PackageTags>dotnet;clean-architecture;ddd;use-cases;repository-pattern;mysql;validation;response;errors;cryptography;encryption;hashing;identity;security</PackageTags>
-    <RepositoryUrl>https://github.com/usuario/repositorio</RepositoryUrl>
+    <RepositoryUrl>https://github.com/jpmarion/CompartidoPE</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
