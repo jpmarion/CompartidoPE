@@ -8,9 +8,9 @@
 
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-    <FileVersion>2.0.0.2</FileVersion>
-    <AssemblyVersion>2.0.0.2</AssemblyVersion>
-    <Version>2.0.2</Version>
+    <FileVersion>2.0.0.3</FileVersion>
+    <AssemblyVersion>2.0.0.3</AssemblyVersion>
+    <Version>2.0.3</Version>
 
     <PackageId>CompartidoPE</PackageId>
     <Authors>Juan Pablo Marion</Authors>
