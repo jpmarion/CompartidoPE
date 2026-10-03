@@ -5,11 +5,40 @@ using MySql.Data.MySqlClient;
 
 namespace CompartidoPE.Abstracta
 {
-    public abstract class AMysqlRepo(string conexion) : ISqlRepo
+    public abstract class AMysqlRepo : ISqlRepo
     {
-        private readonly string _connectionString = conexion;
+        private readonly string _connectionString;
         private MySqlConnection? _conexion;
-        MySqlTransaction? _mySqlTransaction = null;
+        private MySqlTransaction? _mySqlTransaction;
+
+        public AMysqlRepo(string conexion)
+        {
+            MySqlConnectionStringBuilder builder = new(conexion)
+            {
+                Pooling = true
+            };
+
+            _connectionString = builder.ConnectionString;
+        }
+
+        public AMysqlRepo(string conexion, uint minimumPoolSize, uint maximumPoolSize)
+            : this(conexion)
+        {
+            if (minimumPoolSize > maximumPoolSize)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(minimumPoolSize),
+                    "El tamaño mínimo del pool no puede superar al máximo.");
+            }
+
+            MySqlConnectionStringBuilder builder = new(_connectionString)
+            {
+                MinimumPoolSize = minimumPoolSize,
+                MaximumPoolSize = maximumPoolSize
+            };
+
+            _connectionString = builder.ConnectionString;
+        }
 
         public void BeginTransaction()
         {
@@ -18,29 +47,51 @@ namespace CompartidoPE.Abstracta
 
         public void CommitTransaction()
         {
-            _mySqlTransaction?.Commit();
-            _conexion!.CloseAsync();
-            _conexion.Dispose();
+            try
+            {
+                _mySqlTransaction?.Commit();
+            }
+            finally
+            {
+                CerrarConexion();
+            }
         }
 
         public async Task ConexionOpen()
         {
+            if (_conexion?.State == ConnectionState.Open)
+            {
+                return;
+            }
+
+            CerrarConexion();
             _conexion = new MySqlConnection(_connectionString);
-            if (_conexion.State != ConnectionState.Open)
+
+            try
             {
                 await _conexion.OpenAsync();
+            }
+            catch
+            {
+                CerrarConexion();
+                throw;
             }
         }
 
         public async Task<DbConnection> ObtenerNuevaConexion()
         {
             MySqlConnection conexion = new(_connectionString);
-            if (conexion.State != ConnectionState.Open)
+
+            try
             {
                 await conexion.OpenAsync();
+                return conexion;
             }
-
-            return conexion;
+            catch
+            {
+                await conexion.DisposeAsync();
+                throw;
+            }
         }
 
         public DbConnection ObtenerConexion()
@@ -50,15 +101,23 @@ namespace CompartidoPE.Abstracta
 
         public void RollbackTransaction()
         {
-            if (_conexion != null)
+            try
             {
-                if (_mySqlTransaction != null)
-                {
-                    _mySqlTransaction!.Rollback();
-                    _conexion!.CloseAsync();
-                    _conexion.Dispose();
-                }
+                _mySqlTransaction?.Rollback();
             }
+            finally
+            {
+                CerrarConexion();
+            }
+        }
+
+        public void CerrarConexion()
+        {
+            _mySqlTransaction?.Dispose();
+            _mySqlTransaction = null;
+
+            _conexion?.Dispose();
+            _conexion = null;
         }
     }
 }

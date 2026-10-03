@@ -63,6 +63,11 @@ namespace CompartidoPE.Abstracta
 
                 return parameters.Response;
             }
+            finally
+            {
+                // Dispose no destruye la conexión física: MySql.Data la devuelve al pool.
+                sqlRepo.CerrarConexion();
+            }
         }
     }
 }

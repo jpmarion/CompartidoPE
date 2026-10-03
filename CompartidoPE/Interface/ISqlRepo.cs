@@ -9,5 +9,8 @@ namespace CompartidoPE.Interface
         public void RollbackTransaction();
         public Task ConexionOpen();
         public DbConnection ObtenerConexion();
+
+        // Cerrar o desechar una conexión la devuelve al pool del proveedor.
+        public void CerrarConexion() => ObtenerConexion()?.Dispose();
     }
 }
